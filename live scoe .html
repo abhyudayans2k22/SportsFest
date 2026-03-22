@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { background: transparent; color: white; font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        #scoreboard-container { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        
+        .card-uniform { width: 100%; max-width: 360px; background: #0f0f0f; border-radius: 12px; border: 1px solid #222; box-sizing: border-box; box-shadow: 0 10px 30px rgba(0,0,0,0.7); overflow: hidden; position: relative; transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* BLACK & WHITE STYLE FOR FINISHED GAMES */
+        .is-finished { filter: grayscale(1); opacity: 0.6; order: 2; }
+        .is-live { order: 1; border-color: #00d4ff; box-shadow: 0 0 20px rgba(0,212,255,0.15); }
+
+        .sport-header { padding: 10px 12px; background: #1a1a1a; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .sport-title { font-size: 11px; font-weight: 900; letter-spacing: 1.5px; color: #00d4ff; text-transform: uppercase; }
+        .live-indicator { font-size: 10px; font-weight: bold; display: flex; align-items: center; gap: 5px; color: #eee; }
+        
+        .final-badge { font-size: 10px; font-weight: bold; color: #ffca28; border: 1px solid #ffca28; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .dot { width: 6px; height: 6px; background: #ff3b30; border-radius: 50%; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        
+        .score-main { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 15px 10px 5px 10px; text-align: center; }
+        .team-box { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .logo-img { width: 38px; height: 38px; background: #222; border-radius: 6px; border: 1px solid #333; object-fit: contain; }
+        .team-label { font-size: 11px; font-weight: bold; color: #eee; }
+        .big-score { font-size: 34px; font-weight: 800; text-shadow: 0 0 12px rgba(0,212,255,0.4); }
+        
+        .match-res { font-size: 12px; color: #ffca28; text-align: center; font-weight: 700; padding: 10px 5px; text-transform: uppercase; border-top: 1px solid #1a1a1a; margin-top: 5px; background: rgba(255, 202, 40, 0.05); min-height: 18px; }
+        
+        /* NEW BUTTON STYLE */
+        .c-btn-area { padding: 0 15px 10px 15px; }
+        .c-score-btn { 
+            display: block; width: 100%; padding: 8px 0; border: 1px solid #00d4ff; border-radius: 6px; 
+            background: rgba(0, 212, 255, 0.1); color: #00d4ff; font-size: 10px; font-weight: 800; 
+            text-align: center; text-decoration: none; text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        .sets-container { padding: 10px 15px 15px 15px; }
+        .set-row { display: flex; align-items: center; justify-content: space-between; font-size: 11px; margin-top: 6px; color: #888; }
+        .pt-box { background: #1a1a1a; color: #fff; padding: 3px 6px; border-radius: 4px; margin-left: 4px; font-weight: bold; border: 1px solid #333; }
+        .stat-tabs { display: flex; background: #000; border-top: 1px solid #1a1a1a; }
+        .tab { flex: 1; padding: 10px; font-size: 10px; font-weight: bold; color: #555; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; }
+        .tab.active { color: #fff; border-bottom-color: #00d4ff; background: #121212; }
+        .stat-table { width: 100%; border-collapse: collapse; }
+        .stat-table td { padding: 8px 15px; border-bottom: 1px solid #1a1a1a; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div id="scoreboard-container">
+    <div id="card-cricket" class="card-uniform">
+        <div class="sport-header">
+            <span class="sport-title">CRICKET</span>
+            <div id="c-status-area"></div>
+        </div>
+        <div style="padding:15px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:8px;"><img id="c1-img" src="" class="logo-img"><span id="c1-n" style="font-weight:700;">...</span></div>
+                <div><span id="c1-s" style="font-size:16px; font-weight:800;">0/0</span> <small id="c1-o" style="color:#666">(0)</small></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:8px;"><img id="c2-img" src="" class="logo-img"><span id="c2-n" style="font-weight:700;">...</span></div>
+                <div><span id="c2-s" style="font-size:16px; font-weight:800;">0/0</span> <small id="c2-o" style="color:#666">(0)</small></div>
+            </div>
+        </div>
+        
+        <div class="c-btn-area">
+            <a id="c-link" href="#" target="_blank" class="c-score-btn">Full Scorecard →</a>
+        </div>
+
+        <div id="c-res" class="match-res"></div>
+    </div>
+
+    <div id="card-volley" class="card-uniform">
+        <div class="sport-header">
+            <span class="sport-title">VOLLEYBALL / THROWBALL</span>
+            <div id="v-status-area"></div>
+        </div>
+        <div class="score-main">
+            <div class="team-box"><img id="v1-img" src="" class="logo-img"><div id="v1-n" class="team-label">...</div></div>
+            <div id="v-score" class="big-score">0-0</div>
+            <div class="team-box"><img id="v2-img" src="" class="logo-img"><div id="v2-n" class="team-label">...</div></div>
+        </div>
+        <div id="v-res" class="match-res"></div>
+        <div class="sets-container">
+            <div class="set-row"><span id="v1-ln">...</span><div id="v1-pts" style="display:flex;"></div></div>
+            <div class="set-row"><span id="v2-ln">...</span><div id="v2-pts" style="display:flex;"></div></div>
+        </div>
+    </div>
+
+    <div id="card-basket" class="card-uniform">
+        <div class="sport-header">
+            <span class="sport-title">BASKETBALL</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span id="b-period" style="font-size:10px; font-weight:bold; color:#888;">...</span>
+                <div id="b-status-area"></div>
+            </div>
+        </div>
+        <div class="score-main">
+            <div class="team-box"><img id="b1-img" src="" class="logo-img"><div id="b1-n" class="team-label">...</div></div>
+            <div id="b-score" class="big-score">0-0</div>
+            <div class="team-box"><img id="b2-img" src="" class="logo-img"><div id="b2-n" class="team-label">...</div></div>
+        </div>
+        <div id="b-res" class="match-res"></div>
+        <div class="stat-tabs">
+            <button id="tb1" class="tab active" onclick="switchT('team1')">...</button>
+            <button id="tb2" class="tab" onclick="switchT('team2')">...</button>
+        </div>
+        <table class="stat-table"><tbody id="stat-list"></tbody></table>
+    </div>
+</div>
+
+<script>
+    const URLS = {
+        cricket: "https://script.google.com/macros/s/AKfycbz14gC8NJEcLhVyeM7EJENk9wKS4NBhHWXSvtBC0Yqq8wchF9FTgnySAqahPn2Gakh9/exec",
+        volley: "https://script.google.com/macros/s/AKfycbxa-iwAd5h2PYNLXUpm8Z-WQf52lT6xbiwXYMR03Tk0KNMHNbN86kN7pbidHmtuauuGJg/exec",
+        basket: "https://script.google.com/macros/s/AKfycbxhObQSh88SYZ0xzB8niSmzJlCG9wWYhxaSnrqkNfQLuY-nYaL1kfZielDZMOWvbG7U/exec"
+    };
+
+    let bStats = { team1: [], team2: [] }, curView = 'team1';
+    function toBalls(ov) { let pts = ov.toString().split('.'); return (parseInt(pts[0]) * 6) + (parseInt(pts[1]) || 0); }
+
+    async function sync() {
+        // Adding the timestamp (?t=...) prevents the browser from showing old, cached scores
+        const cacheBuster = "?t=" + new Date().getTime();
+        try {
+            const [resC, resV, resB] = await Promise.all([
+                fetch(URLS.cricket + cacheBuster).then(r => r.json()).catch(()=>null),
+                fetch(URLS.volley + cacheBuster).then(r => r.json()).catch(()=>null),
+                fetch(URLS.basket + cacheBuster).then(r => r.json()).catch(()=>null)
+            ]);
+            updateUI(resC, resV, resB);
+            sortCards();
+        } catch (e) { console.error("Sync Error"); }
+    }
+
+    function sortCards() {
+        const container = document.getElementById('scoreboard-container');
+        const cards = Array.from(container.children);
+        cards.sort((a, b) => a.classList.contains('is-finished') - b.classList.contains('is-finished'));
+        cards.forEach(card => container.appendChild(card));
+    }
+
+    function updateUI(dC, dV, dB) {
+        if (dC) {
+            const t1 = { n: dC[0][1], s: dC[1][1], o: dC[2][1], img: dC[3][1] };
+            const t2 = { n: dC[4][1], s: dC[5][1], o: dC[6][1], img: dC[7][1] };
+            const manualStatus = (dC[8][1] || "").toString().toUpperCase();
+            
+            document.getElementById('c-link').href = dC[9] ? dC[9][1] : "#";
+
+            const r1 = parseInt(t1.s.split('/')[0]) || 0;
+            const r2 = parseInt(t2.s.split('/')[0]) || 0;
+            const w2 = parseInt(t2.s.split('/')[1]) || 0;
+            const b2 = toBalls(t2.o); const target = r1 + 1;
+            
+            let isFin = manualStatus.includes("WON") || manualStatus.includes("FINAL") || r2 >= target || b2 >= 60 || w2 >= 10;
+            
+            document.getElementById('card-cricket').className = isFin ? "card-uniform is-finished" : "card-uniform is-live";
+            document.getElementById('c-status-area').innerHTML = isFin ? '<span class="final-badge">FINAL SCORE</span>' : '<span class="live-indicator"><span class="dot"></span> LIVE</span>';
+            
+            let sText = isFin ? (r2 >= target ? `${t2.n} WON BY ${10 - w2} WICKETS` : `${t1.n} WON BY ${r1 - r2} RUNS`) :
+                        (r2 === 0 && b2 === 0 ? `CRR: ${toBalls(t1.o) > 0 ? ((r1/toBalls(t1.o))*6).toFixed(2) : "0.00"} | ${t1.n} BATTING` : `${t2.n} NEEDS ${target - r2} RUNS IN ${60 - b2} BALLS`);
+            
+            document.getElementById('c1-n').innerText=t1.n; document.getElementById('c1-s').innerText=t1.s;
+            document.getElementById('c1-o').innerText=`(${t1.o})`; document.getElementById('c1-img').src=t1.img;
+            document.getElementById('c2-n').innerText=t2.n; document.getElementById('c2-s').innerText=t2.s;
+            document.getElementById('c2-o').innerText=`(${t2.o})`; document.getElementById('c2-img').src=t2.img;
+            document.getElementById('c-res').innerText = sText;
+        }
+
+        if (dV) {
+            const statusV = (dV[6][1]||"").toString().toUpperCase();
+            const isFin = statusV.includes("FINISH") || statusV.includes("FINAL");
+            let s1=0, s2=0, h1='', h2='';
+            for(let i=1;i<=5;i++){
+                let p1 = dV[4][i], p2 = dV[5][i];
+                if(p1 || p2){
+                    if(parseInt(p1) > parseInt(p2)) s1++; else if(parseInt(p2) > parseInt(p1)) s2++;
+                    h1+=`<div class="pt-box">${p1||0}</div>`; h2+=`<div class="pt-box">${p2||0}</div>`;
+                }
+            }
+            document.getElementById('card-volley').className = isFin ? "card-uniform is-finished" : "card-uniform is-live";
+            document.getElementById('v-status-area').innerHTML = isFin ? '<span class="final-badge">FINAL SCORE</span>' : '<span class="live-indicator"><span class="dot"></span> LIVE</span>';
+            document.getElementById('v-score').innerText=`${s1}-${s2}`;
+            document.getElementById('v1-pts').innerHTML=h1; document.getElementById('v2-pts').innerHTML=h2;
+            document.getElementById('v1-n').innerText=dV[0][1]; document.getElementById('v2-n').innerText=dV[1][1];
+            document.getElementById('v1-ln').innerText=dV[0][1]; document.getElementById('v2-ln').innerText=dV[1][1];
+            document.getElementById('v1-img').src=dV[2][1]; document.getElementById('v2-img').src=dV[3][1];
+            
+            if(isFin){
+                document.getElementById('v-res').style.display = "block";
+                document.getElementById('v-res').innerText = `${s1 > s2 ? dV[0][1] : dV[1][1]} WINS ${Math.max(s1,s2)}-${Math.min(s1,s2)}`;
+            } else {
+                document.getElementById('v-res').style.display = "none";
+            }
+        }
+
+        if (dB) {
+            const statusB = (dB[3][5]||"").toString().toUpperCase();
+            const isFin = statusB.includes("FINAL") || statusB.includes("FINISH");
+            document.getElementById('card-basket').className = isFin ? "card-uniform is-finished" : "card-uniform is-live";
+            document.getElementById('b-status-area').innerHTML = isFin ? '<span class="final-badge">FINAL SCORE</span>' : '<span class="live-indicator"><span class="dot"></span> LIVE</span>';
+            document.getElementById('b-period').innerText=(dB[3][4]||"").toUpperCase();
+            document.getElementById('b1-n').innerText=dB[1][4]; document.getElementById('b2-n').innerText=dB[2][4];
+            document.getElementById('tb1').innerText=dB[1][4]; document.getElementById('tb2').innerText=dB[2][4];
+            document.getElementById('b1-img').src=dB[1][5]; document.getElementById('b2-img').src=dB[2][5];
+            
+            if(isFin){
+                document.getElementById('b-res').style.display = "block";
+                document.getElementById('b-res').innerText = dB[4][5] || "MATCH FINISHED";
+            } else {
+                document.getElementById('b-res').style.display = "none";
+            }
+
+            let p1=[], p2=[], s1=0, s2=0;
+            dB.slice(1).forEach(r => {
+                if(r[0] && r[2]) {
+                   let p = { n: r[0], pts: parseInt(r[1]) || 0, t: r[2].trim().toLowerCase() };
+                   if(p.t === dB[1][4].toLowerCase()){ s1 += p.pts; p1.push(p); }
+                   else if(p.t === dB[2][4].toLowerCase()){ s2 += p.pts; p2.push(p); }
+                }
+            });
+            document.getElementById('b-score').innerText = `${s1}-${s2}`;
+            bStats.team1 = p1.sort((a,b) => b.pts - a.pts);
+            bStats.team2 = p2.sort((a,b) => b.pts - a.pts);
+            renderStats();
+        }
+    }
+
+    function switchT(v){ curView=v; renderStats(); }
+    function renderStats(){
+        let h=''; (bStats[curView] || []).forEach(p=>{
+            h+=`<tr><td style="color:#4da3ff; font-weight:600;">${p.n}</td><td style="text-align:right; font-weight:800; font-size:15px;">${p.pts}</td></tr>`;
+        });
+        document.getElementById('stat-list').innerHTML=h;
+        document.getElementById('tb1').className=curView==='team1'?'tab active':'tab';
+        document.getElementById('tb2').className=curView==='team2'?'tab active':'tab';
+    }
+
+    sync();
+    // Reduced interval to 1000ms (1 second) for faster live updates
+    setInterval(sync, 1000); 
+</script>
+</body>
+</html>
